@@ -1,27 +1,21 @@
-import google.generativeai as genai
 import streamlit as st
-import os
-from dotenv import load_dotenv
-
-# --- Load environment variables ---
-load_dotenv()
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+import grok
 
 # --- App Title ---
 st.title("Text Summarizer")
-st.markdown("Enter your text below and get a clean, structured summary powered by Gemini AI.")
+st.markdown("Enter your text below and get a clean, structured summary powered by AI.")
 
 # --- Input Section ---
 text = st.text_area("Enter your text here:", height=250)
 
 # --- API Configuration ---
-if not GOOGLE_API_KEY:
-    st.error("Google API key is missing!")
+try:
+    GROK_API_KEY = st.secrets["GROK_API_KEY"]
+except KeyError:
+    st.error("Grok API key is missing!")
     st.stop()
 
-genai.configure(api_key=GOOGLE_API_KEY)
-MODEL_NAME = "gemini-1.5-flash"
-gen_model = genai.GenerativeModel(MODEL_NAME)
+grok.api_key = GROK_API_KEY
 
 # --- Button ---
 summarize = st.button("Summarize")
@@ -62,9 +56,14 @@ Here is the text to summarize:
 Now produce the final summary below:
 """
 
-        response = gen_model.generate_content([prompt])
+        # --- Grok generate call ---
+        response = grok.generate(prompt)
+
+        # Check response structure (usually 'text')
+        summary_text = response.get("text", "No summary returned.")
+
         st.markdown("### Summary Result")
-        st.markdown(response.text)
+        st.markdown(summary_text)
 
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")

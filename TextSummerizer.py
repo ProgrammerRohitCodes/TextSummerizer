@@ -20,7 +20,7 @@ if not GOOGLE_API_KEY:
     st.stop()
 
 genai.configure(api_key=GOOGLE_API_KEY)
-MODEL_NAME = "gemini-1.5-flash-latest"
+MODEL_NAME = "gemini-1.5-flash"
 gen_model = genai.GenerativeModel(MODEL_NAME)
 
 # --- Button ---

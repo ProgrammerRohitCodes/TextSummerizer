@@ -1,5 +1,6 @@
 import streamlit as st
-import grok
+from xai_sdk import Client
+from xai_sdk.chat import system, user
 
 # --- App Title ---
 st.title("Text Summarizer")
@@ -15,7 +16,7 @@ except KeyError:
     st.error("Grok API key is missing!")
     st.stop()
 
-grok.api_key = GROK_API_KEY  # Set your API key
+client = Client(api_key=GROK_API_KEY)
 
 # --- Button ---
 summarize = st.button("Summarize")
@@ -55,7 +56,7 @@ Produce the summary below:
 """
 
         # --- Grok generate using chat ---
-        response = grok.chat(model="gpt-4-turbo", messages=[{"role": "user", "content": prompt}])
+        response = client.chat(messages=[{"role": "user", "content": prompt}])
 
         # Extract summary text
         summary_text = response["content"] if "content" in response else "No summary returned."

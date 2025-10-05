@@ -15,7 +15,7 @@ except KeyError:
     st.error("Grok API key is missing!")
     st.stop()
 
-grok.api_key = GROK_API_KEY
+client = grok.Client(api_key=GROK_API_KEY)
 
 # --- Button ---
 summarize = st.button("Summarize")
@@ -56,11 +56,11 @@ Here is the text to summarize:
 Now produce the final summary below:
 """
 
-        # --- Grok generate call ---
-        response = grok.generate(prompt)
+        # --- Grok generate via chat API ---
+        response = client.chat(messages=[{"role": "user", "content": prompt}])
 
-        # Check response structure (usually 'text')
-        summary_text = response.get("text", "No summary returned.")
+        # Extract the text
+        summary_text = response.get("content", "No summary returned.")
 
         st.markdown("### Summary Result")
         st.markdown(summary_text)

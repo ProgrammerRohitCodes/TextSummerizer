@@ -8,14 +8,14 @@ st.markdown("Enter your text below and get a clean, structured summary powered b
 # --- Input Section ---
 text = st.text_area("Enter your text here:", height=250)
 
-# --- API Configuration ---
+# --- API Key from Streamlit secrets ---
 try:
     GROK_API_KEY = st.secrets["GROK_API_KEY"]
 except KeyError:
     st.error("Grok API key is missing!")
     st.stop()
 
-client = grok.Client(api_key=GROK_API_KEY)
+grok.api_key = GROK_API_KEY  # Set your API key
 
 # --- Button ---
 summarize = st.button("Summarize")
@@ -34,33 +34,31 @@ in a professional, human-like tone.
 
 Follow these strict rules:
 
-1. **Main Objective:** Capture the core ideas, reasoning, and insights — not every line.
-2. **Clarity:** Rewrite sentences for coherence, remove redundancy and filler words.
-3. **Tone:**
-   - If the input text is academic, summarize in a formal tone.
-   - If it’s casual or conversational, keep it natural and easy to read.
-4. **Length:**
-   - For short inputs (<100 words), write a 1–2 sentence summary.
-   - For medium inputs (100–300 words), write 3–5 sentences.
-   - For long texts, aim for 1 concise paragraph (max 120 words).
-5. **Objectivity:** Do not add new information or personal opinions — only summarize what’s present.
-6. **Unclear or incomplete input:** If the text seems vague, mention that politely in your summary.
-7. **Formatting:**
-   - Use clear, readable language.
-   - Avoid bullet points unless the original text has list-like content.
+1. Capture core ideas, reasoning, and insights — not every line.
+2. Rewrite sentences for coherence, remove redundancy and filler words.
+3. Tone:
+   - Academic text → formal tone.
+   - Casual text → natural tone.
+4. Length:
+   - Short inputs (<100 words) → 1–2 sentences.
+   - Medium (100–300 words) → 3–5 sentences.
+   - Long text → 1 concise paragraph (max 120 words).
+5. Objectivity: Only summarize what’s present, no added info.
+6. If unclear, mention politely.
+7. Clear, readable formatting; avoid bullets unless original has lists.
 
-Here is the text to summarize:
+Text to summarize:
 
 {text}
 
-Now produce the final summary below:
+Produce the summary below:
 """
 
-        # --- Grok generate via chat API ---
-        response = client.chat(messages=[{"role": "user", "content": prompt}])
+        # --- Grok generate using chat ---
+        response = grok.chat(model="gpt-4-turbo", messages=[{"role": "user", "content": prompt}])
 
-        # Extract the text
-        summary_text = response.get("content", "No summary returned.")
+        # Extract summary text
+        summary_text = response["content"] if "content" in response else "No summary returned."
 
         st.markdown("### Summary Result")
         st.markdown(summary_text)

@@ -3,8 +3,8 @@ import requests
 import json
 
 # --- App Title ---
-st.title("Text Summarizer (Gemini)")
-st.markdown("Enter your text below and get a clean, structured summary powered by Google Gemini.")
+st.title("Text Summarizer (Gemini 2.5 Flash-Lite)")
+st.markdown("Enter your text below and get a structured summary powered by Google Gemini.")
 
 # --- Input Section ---
 text = st.text_area("Enter your text here:", height=250)
@@ -24,7 +24,7 @@ if st.button("Summarize"):
         st.stop()
 
     # --- Create summarization prompt ---
-    prompt = f"""
+    summarization_prompt = f"""
 You are an expert text summarizer with deep understanding of context, logic, and clarity.
 Your job is to read the given text carefully and generate a summary that captures its key points
 in a professional, human-like tone.
@@ -48,15 +48,20 @@ Here is the text to summarize:
 """
 
     try:
-        # --- Prepare API request ---
-        headers = {
-            "Content-Type": "application/json"
+        # --- Prepare API request using correct Gemini v1beta structure ---
+        payload = {
+            "input": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": summarization_prompt}
+                    ]
+                }
+            ]
         }
 
-        payload = {
-            "prompt": prompt,
-            "temperature": 0.2,
-            "candidate_count": 1
+        headers = {
+            "Content-Type": "application/json"
         }
 
         # --- Send request to Gemini API ---

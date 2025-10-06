@@ -11,7 +11,7 @@ text = st.text_area("Enter your text here:", height=250)
 
 # --- API Config ---
 GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY")
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent"
 
 if not GEMINI_API_KEY:
     st.error("Gemini API key is missing!")
@@ -37,7 +37,7 @@ Follow these strict rules:
 If the input text is academic, summarize in a formal tone.
 If it’s casual or conversational, keep it natural and easy to read.
 4. Length:
-For short inputs (<100 words), write a 1–2 sentence summary.
+For short inputs (<100 words), write 1–2 sentence summary.
 For medium inputs (100–300 words), write 3–5 sentences.
 For long texts, aim for 1 concise paragraph (max 120 words).
 5. Objectivity: Do not add new information or personal opinions — only summarize what’s present.
@@ -54,11 +54,9 @@ Here is the text to summarize:
         }
 
         payload = {
-            "contents": [
-                {
-                    "parts": [{"text": prompt}]
-                }
-            ]
+            "prompt": prompt,
+            "temperature": 0.2,
+            "candidate_count": 1
         }
 
         # --- Send request to Gemini API ---
@@ -72,7 +70,7 @@ Here is the text to summarize:
 
         # --- Parse API response ---
         result = response.json()
-        summary_text = result["candidates"][0]["content"]["parts"][0]["text"]
+        summary_text = result["candidates"][0]["content"][0]["text"]
 
         # --- Display summary ---
         st.markdown("### Summary Result")

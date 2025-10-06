@@ -1,19 +1,20 @@
 import streamlit as st
 import requests
+import json
 
 # --- App Title ---
-st.title("Text Summarizer")
-st.markdown("Enter your text below and get a clean, structured summary powered by AI.")
+st.title("Text Summarizer (Gemini)")
+st.markdown("Enter your text below and get a clean, structured summary powered by Google Gemini.")
 
 # --- Input Section ---
 text = st.text_area("Enter your text here:", height=250)
 
 # --- API Config ---
-GROK_API_KEY = st.secrets.get("GROK_API_KEY")
-GROK_API_URL = "https://api.x.ai/v1/chat/completions"
+GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY")
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 
-if not GROK_API_KEY:
-    st.error("Grok API key is missing!")
+if not GEMINI_API_KEY:
+    st.error("Gemini API key is missing!")
     st.stop()
 
 # --- Button ---
@@ -49,25 +50,29 @@ Here is the text to summarize:
     try:
         # --- Prepare API request ---
         headers = {
-            "Authorization": f"Bearer {GROK_API_KEY}",
             "Content-Type": "application/json"
         }
 
         payload = {
-            "model": "grok-3", 
-            "messages": [
-                {"role": "system", "content": "You are a helpful AI text summarizer."},
-                {"role": "user", "content": prompt}
+            "contents": [
+                {
+                    "parts": [{"text": prompt}]
+                }
             ]
         }
 
-        # --- Send request to Grok API ---
-        response = requests.post(GROK_API_URL, headers=headers, json=payload, timeout=60)
+        # --- Send request to Gemini API ---
+        response = requests.post(
+            f"{GEMINI_API_URL}?key={GEMINI_API_KEY}",
+            headers=headers,
+            data=json.dumps(payload),
+            timeout=60
+        )
         response.raise_for_status()
 
         # --- Parse API response ---
         result = response.json()
-        summary_text = result["choices"][0]["message"]["content"]
+        summary_text = result["candidates"][0]["content"]["parts"][0]["text"]
 
         # --- Display summary ---
         st.markdown("### Summary Result")

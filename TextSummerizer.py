@@ -54,7 +54,7 @@ Here is the text to summarize:
         }
 
         payload = {
-            "model": "grok-4", 
+            "model": "grok-3", 
             "messages": [
                 {"role": "system", "content": "You are a helpful AI text summarizer."},
                 {"role": "user", "content": prompt}

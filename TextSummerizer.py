@@ -1,87 +1,44 @@
+import google.generativeai as genai
 import streamlit as st
-import requests
-import json
 
-# --- App Title ---
-st.title("Text Summarizer (Gemini 2.5 Flash-Lite)")
-st.markdown("Enter your text below and get a structured summary powered by Google Gemini.")
+st.title("Text Summarizer")
+st.markdown("Enter your text below and get a clean, professional summary.")
 
-# --- Input Section ---
 text = st.text_area("Enter your text here:", height=250)
 
-# --- API Config ---
-GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY")
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent"
+GOOGLE_API_KEY = "" 
+genai.configure(api_key=GOOGLE_API_KEY)
+MODEL_NAME = "gemini-1.5-flash-latest"
+gen_model = genai.GenerativeModel(MODEL_NAME)
 
-if not GEMINI_API_KEY:
-    st.error("Gemini API key is missing!")
-    st.stop()
+summarize = st.button("Summarize")
 
-# --- Button ---
-if st.button("Summarize"):
-    if not text.strip():
-        st.error("Please enter some text first.")
-        st.stop()
+if summarize:
+    try:
+        if not text.strip():
+            st.error("Please enter some text first.")
+            st.stop()
 
-    # --- Create summarization prompt ---
-    summarization_prompt = f"""
-You are an expert text summarizer with deep understanding of context, logic, and clarity.
-Your job is to read the given text carefully and generate a summary that captures its key points
-in a professional, human-like tone.
+        prompt = f"""
+You are a professional text summarizer. Your task is to read the given text carefully
+and produce a clear, concise, and meaningful summary in 3–5 sentences.
 
-Follow these strict rules:
+Guidelines:
+1. Focus only on the main ideas or arguments.
+2. Skip unnecessary examples, adjectives, and repetition.
+3. Keep the tone of the original text (formal/informal as it appears).
+4. If the text is too short, provide a single-sentence summary.
+5. If the text seems unclear or incomplete, mention that politely in the summary.
 
-1. Main Objective: Capture the core ideas, reasoning, and insights — not every line.
-2. Clarity: Rewrite sentences for coherence, remove redundancy and filler words.
-3. Tone:
-If the input text is academic, summarize in a formal tone.
-If it’s casual or conversational, keep it natural and easy to read.
-4. Length:
-For short inputs (<100 words), write 1–2 sentence summary.
-For medium inputs (100–300 words), write 3–5 sentences.
-For long texts, aim for 1 concise paragraph (max 120 words).
-5. Objectivity: Do not add new information or personal opinions — only summarize what’s present.
-6. If the text seems vague, mention that politely in your summary.
-
-Here is the text to summarize:
+Text to summarize:
 {text}
+
+Now provide the final summary below:
 """
 
-    try:
-        # --- Prepare API request using correct Gemini v1beta structure ---
-        payload = {
-            "input": [
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": summarization_prompt}
-                    ]
-                }
-            ]
-        }
-
-        headers = {
-            "Content-Type": "application/json"
-        }
-
-        # --- Send request to Gemini API ---
-        response = requests.post(
-            f"{GEMINI_API_URL}?key={GEMINI_API_KEY}",
-            headers=headers,
-            data=json.dumps(payload),
-            timeout=60
-        )
-        response.raise_for_status()
-
-        # --- Parse API response ---
-        result = response.json()
-        summary_text = result["candidates"][0]["content"][0]["text"]
-
-        # --- Display summary ---
+        response = gen_model.generate_content([prompt])
         st.markdown("### Summary Result")
-        st.write(summary_text)
+        st.markdown(response.text)
 
-    except requests.exceptions.HTTPError as e:
-        st.error(f"HTTP Error: {e.response.status_code} - {e.response.text}")
     except Exception as e:
-        st.error(f"An unexpected error occurred: {str(e)}")
+        st.error(f"An error occurred: {str(e)}")
